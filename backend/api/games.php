@@ -20,10 +20,12 @@ $offset = ($page - 1) * $limit;
 $total = $db->querySingle('SELECT COUNT(*) FROM games');
 
 $stmt = $db->prepare("
-    SELECT g.game_id, g.game_name, g.region, g.price, g.discount, g.details,
-           p.platform_id, p.platform_name
+    SELECT g.game_id, g.game_name, g.price, g.discount, g.details,
+           p.platform_id, p.platform_name,
+           r.region_id, r.region_name
     FROM games g
     JOIN platforms p ON g.platform_id = p.platform_id
+    JOIN regions   r ON g.region_id   = r.region_id
     LIMIT :limit OFFSET :offset
 ");
 $stmt->bindValue(':limit',  $limit,  SQLITE3_INTEGER);

@@ -32,7 +32,7 @@ function GameCard({ game }) {
       <div className="game-card-body">
         <h3 className="game-card-title">{game.game_name}</h3>
         <span className="game-card-platform">{game.platform_name}</span>
-        <span className="game-card-region">{game.region}</span>
+        <span className="game-card-region">{game.region_name}</span>
         <p className="game-card-details">{game.details}</p>
         <div className="game-card-pricing">
           {game.discount ? (

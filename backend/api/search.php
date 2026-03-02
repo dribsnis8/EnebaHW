@@ -21,10 +21,12 @@ if ($query === '') {
 $db = getDB();
 
 $result = $db->query("
-    SELECT g.game_id, g.game_name, g.region, g.price, g.discount, g.details,
-           p.platform_id, p.platform_name
+    SELECT g.game_id, g.game_name, g.price, g.discount, g.details,
+           p.platform_id, p.platform_name,
+           r.region_id, r.region_name
     FROM games g
     JOIN platforms p ON g.platform_id = p.platform_id
+    JOIN regions   r ON g.region_id   = r.region_id
 ");
 
 // Levenshtein-distance threshold: allow roughly 40 % edit distance of the
