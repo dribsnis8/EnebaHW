@@ -1,0 +1,10 @@
+# Node / React
+frontend/node_modules/
+frontend/build/
+
+# SQLite database (generated at runtime)
+backend/database/*.db
+
+# OS
+.DS_Store
+Thumbs.db
