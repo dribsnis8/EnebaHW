@@ -3,25 +3,23 @@ require_once __DIR__ . '/database.php';
 
 $db = getDB();
 
-$db->exec('PRAGMA foreign_keys = ON;');
-
 $db->exec('
     CREATE TABLE IF NOT EXISTS platforms (
-        platform_id   INTEGER PRIMARY KEY AUTOINCREMENT,
+        platform_id   SERIAL PRIMARY KEY,
         platform_name VARCHAR(255) NOT NULL
     );
 ');
 
 $db->exec('
     CREATE TABLE IF NOT EXISTS regions (
-        region_id   INTEGER PRIMARY KEY AUTOINCREMENT,
+        region_id   SERIAL PRIMARY KEY,
         region_name VARCHAR(255) NOT NULL
     );
 ');
 
 $db->exec('
     CREATE TABLE IF NOT EXISTS games (
-        game_id     INTEGER PRIMARY KEY AUTOINCREMENT,
+        game_id     SERIAL PRIMARY KEY,
         game_name   VARCHAR(255) NOT NULL,
         price       FLOAT        NOT NULL,
         discount    INTEGER,
@@ -35,7 +33,12 @@ $db->exec('
 ');
 
 // Only seed if tables are empty
-$count = $db->querySingle('SELECT COUNT(*) FROM platforms');
+try {
+    $count = (int)$db->query('SELECT COUNT(*) FROM platforms')->fetchColumn();
+} catch (PDOException $e) {
+    // Table may not exist yet on very first run; treat as empty
+    $count = 0;
+}
 if ($count === 0) {
     $platforms = [
         'PC',
@@ -47,8 +50,7 @@ if ($count === 0) {
     ];
     $stmt = $db->prepare('INSERT INTO platforms (platform_name) VALUES (:name)');
     foreach ($platforms as $name) {
-        $stmt->bindValue(':name', $name, SQLITE3_TEXT);
-        $stmt->execute();
+        $stmt->execute([':name' => $name]);
     }
 
     // Seed regions
@@ -56,8 +58,7 @@ if ($count === 0) {
     $regions = ['Global', 'Europe', 'North America', 'Asia'];
     $stmt = $db->prepare('INSERT INTO regions (region_name) VALUES (:name)');
     foreach ($regions as $name) {
-        $stmt->bindValue(':name', $name, SQLITE3_TEXT);
-        $stmt->execute();
+        $stmt->execute([':name' => $name]);
     }
 
     // platform_id: PC=1, PS5=2, PS4=3, XboxSX=4, XboxOne=5, Switch=6
@@ -103,14 +104,15 @@ if ($count === 0) {
         VALUES (:game_name, :price, :discount, :details, :image_url, :platform_id, :region_id)
     ');
     foreach ($games as $g) {
-        $stmt->bindValue(':game_name',   $g[0], SQLITE3_TEXT);
-        $stmt->bindValue(':price',       $g[1], SQLITE3_FLOAT);
-        $stmt->bindValue(':discount',    $g[2], $g[2] === null ? SQLITE3_NULL : SQLITE3_INTEGER);
-        $stmt->bindValue(':details',     $g[3], SQLITE3_TEXT);
-        $stmt->bindValue(':image_url',   $g[4], SQLITE3_TEXT);
-        $stmt->bindValue(':platform_id', $g[5], SQLITE3_INTEGER);
-        $stmt->bindValue(':region_id',   $g[6], SQLITE3_INTEGER);
-        $stmt->execute();
+        $stmt->execute([
+            ':game_name'   => $g[0],
+            ':price'       => $g[1],
+            ':discount'    => $g[2],
+            ':details'     => $g[3],
+            ':image_url'   => $g[4],
+            ':platform_id' => $g[5],
+            ':region_id'   => $g[6],
+        ]);
     }
 
     echo "Database initialized and seeded successfully.\n";

@@ -17,7 +17,7 @@ $page  = isset($_GET['page'])  ? max(1, (int)$_GET['page'])  : 1;
 $limit = isset($_GET['limit']) ? max(1, (int)$_GET['limit']) : 20;
 $offset = ($page - 1) * $limit;
 
-$total = $db->querySingle('SELECT COUNT(*) FROM games');
+$total = (int)$db->query('SELECT COUNT(*) FROM games')->fetchColumn();
 
 $stmt = $db->prepare("
     SELECT g.game_id, g.game_name, g.price, g.discount, g.details, g.image_url,
@@ -28,17 +28,14 @@ $stmt = $db->prepare("
     JOIN regions   r ON g.region_id   = r.region_id
     LIMIT :limit OFFSET :offset
 ");
-$stmt->bindValue(':limit',  $limit,  SQLITE3_INTEGER);
-$stmt->bindValue(':offset', $offset, SQLITE3_INTEGER);
-$result = $stmt->execute();
+$stmt->bindValue(':limit',  $limit,  PDO::PARAM_INT);
+$stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+$stmt->execute();
 
-$games = [];
-while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
-    $games[] = $row;
-}
+$games = $stmt->fetchAll();
 
 echo json_encode([
-    'total' => (int)$total,
+    'total' => $total,
     'page'  => $page,
     'limit' => $limit,
     'games' => $games,

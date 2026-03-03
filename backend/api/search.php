@@ -20,7 +20,7 @@ if ($query === '') {
 
 $db = getDB();
 
-$result = $db->query("
+$stmt = $db->query("
     SELECT g.game_id, g.game_name, g.price, g.discount, g.details, g.image_url,
            p.platform_id, p.platform_name,
            r.region_id, r.region_name
@@ -35,7 +35,7 @@ $queryLower = strtolower($query);
 $maxDistance = max(3, (int)(strlen($query) * 0.4));
 
 $matches = [];
-while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
+while ($row = $stmt->fetch()) {
     $nameLower = strtolower($row['game_name']);
 
     // Exact / substring match – always include
