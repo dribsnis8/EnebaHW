@@ -20,7 +20,7 @@ function App() {
   const loadGames = useCallback(async (nextPage = 1, append = false) => {
     setLoading(true);
     try {
-      const res  = await fetch(`${API_BASE}/games.php?page=${nextPage}&limit=${INITIAL_LIMIT}`);
+      const res  = await fetch(`${API_BASE}/list.php?page=${nextPage}&limit=${INITIAL_LIMIT}`);
       const data = await res.json();
       const games = data.games || [];
       setDisplayed(prev => append ? [...prev, ...games] : games);
@@ -41,7 +41,7 @@ function App() {
     }
     setLoading(true);
     try {
-      const res  = await fetch(`${API_BASE}/search.php?q=${encodeURIComponent(q)}`);
+      const res  = await fetch(`${API_BASE}/list.php?search=${encodeURIComponent(q)}`);
       const data = await res.json();
       setDisplayed(data.games || []);
       setHasMore(false);
