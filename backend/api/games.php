@@ -34,6 +34,12 @@ $stmt->execute();
 
 $games = $stmt->fetchAll();
 
+foreach ($games as &$g) {
+    $g['price']    = (float)$g['price'];
+    $g['discount'] = $g['discount'] !== null ? (int)$g['discount'] : null;
+}
+unset($g);
+
 echo json_encode([
     'total' => $total,
     'page'  => $page,

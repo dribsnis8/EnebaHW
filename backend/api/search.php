@@ -64,6 +64,8 @@ usort($matches, fn($a, $b) => $a['distance'] <=> $b['distance']);
 // Remove helper field before sending
 foreach ($matches as &$m) {
     unset($m['distance']);
+    $m['price']    = (float)$m['price'];
+    $m['discount'] = $m['discount'] !== null ? (int)$m['discount'] : null;
 }
 
 echo json_encode(['games' => $matches, 'query' => $query]);
