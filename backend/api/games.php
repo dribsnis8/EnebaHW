@@ -20,7 +20,7 @@ $offset = ($page - 1) * $limit;
 $total = $db->querySingle('SELECT COUNT(*) FROM games');
 
 $stmt = $db->prepare("
-    SELECT g.game_id, g.game_name, g.price, g.discount, g.details,
+    SELECT g.game_id, g.game_name, g.price, g.discount, g.details, g.image_url,
            p.platform_id, p.platform_name,
            r.region_id, r.region_name
     FROM games g

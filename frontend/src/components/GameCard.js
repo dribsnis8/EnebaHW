@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './GameCard.css';
 
 const GAME_COLORS = {
@@ -7,8 +7,20 @@ const GAME_COLORS = {
   'Split Fiction':         { bg: '#1a3a6b', accent: '#6894e0', label: 'Split Fiction' },
 };
 
-function GameCover({ name }) {
+function GameCover({ name, imageUrl }) {
+  const [imgError, setImgError] = useState(false);
   const theme = GAME_COLORS[name] || { bg: '#2a2a3e', accent: '#7b68ee', label: name };
+
+  if (imageUrl && !imgError) {
+    return (
+      <img
+        className="game-card-cover game-card-cover-image"
+        src={imageUrl}
+        alt={name}
+        onError={() => setImgError(true)}
+      />
+    );
+  }
   return (
     <div
       className="game-card-cover"
@@ -28,7 +40,7 @@ function GameCard({ game }) {
 
   return (
     <div className="game-card">
-      <GameCover name={game.game_name} />
+      <GameCover name={game.game_name} imageUrl={game.image_url} />
       <div className="game-card-body">
         <h3 className="game-card-title">{game.game_name}</h3>
         <span className="game-card-platform">{game.platform_name}</span>

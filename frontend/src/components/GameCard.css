@@ -21,6 +21,10 @@
   justify-content: center;
 }
 
+.game-card-cover-image {
+  object-fit: cover;
+}
+
 .game-card-cover-label {
   font-size: 1.1rem;
   font-weight: 800;

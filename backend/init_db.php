@@ -26,6 +26,7 @@ $db->exec('
         price       FLOAT        NOT NULL,
         discount    INTEGER,
         details     VARCHAR      NOT NULL,
+        image_url   VARCHAR(512),
         platform_id INTEGER      NOT NULL,
         region_id   INTEGER      NOT NULL,
         FOREIGN KEY (platform_id) REFERENCES platforms(platform_id),
@@ -61,49 +62,54 @@ if ($count === 0) {
 
     // platform_id: PC=1, PS5=2, PS4=3, XboxSX=4, XboxOne=5, Switch=6
     // region_id:   Global=1, Europe=2, North America=3, Asia=4
+    // image_url:   Steam CDN header images per game title
+    $fifa_img = 'https://cdn.akamai.steamstatic.com/steam/apps/1811260/header.jpg';
+    $rdr2_img = 'https://cdn.akamai.steamstatic.com/steam/apps/1174180/header.jpg';
+    $sf_img   = 'https://cdn.akamai.steamstatic.com/steam/apps/2001120/header.jpg';
     $games = [
         // EA SPORTS FIFA 23
-        ['EA SPORTS FIFA 23', 59.99, null, 'The most realistic football game to date.',      1, 1],
-        ['EA SPORTS FIFA 23', 59.99, 10,   'European edition with Bundesliga license.',      1, 2],
-        ['EA SPORTS FIFA 23', 59.99, null, 'Includes all MLS teams.',                       2, 3],
-        ['EA SPORTS FIFA 23', 49.99, 5,    'Asian regional edition.',                       3, 4],
-        ['EA SPORTS FIFA 23', 59.99, null, 'Ultimate Team edition.',                        4, 1],
-        ['EA SPORTS FIFA 23', 69.99, 15,   'Champions Edition with bonus content.',         5, 2],
-        ['EA SPORTS FIFA 23', 59.99, null, 'Standard edition for Nintendo Switch.',         6, 1],
-        ['EA SPORTS FIFA 23', 59.99, 20,   'Discounted North America edition.',             2, 3],
+        ['EA SPORTS FIFA 23', 59.99, null, 'The most realistic football game to date.',      $fifa_img, 1, 1],
+        ['EA SPORTS FIFA 23', 59.99, 10,   'European edition with Bundesliga license.',      $fifa_img, 1, 2],
+        ['EA SPORTS FIFA 23', 59.99, null, 'Includes all MLS teams.',                       $fifa_img, 2, 3],
+        ['EA SPORTS FIFA 23', 49.99, 5,    'Asian regional edition.',                       $fifa_img, 3, 4],
+        ['EA SPORTS FIFA 23', 59.99, null, 'Ultimate Team edition.',                        $fifa_img, 4, 1],
+        ['EA SPORTS FIFA 23', 69.99, 15,   'Champions Edition with bonus content.',         $fifa_img, 5, 2],
+        ['EA SPORTS FIFA 23', 59.99, null, 'Standard edition for Nintendo Switch.',         $fifa_img, 6, 1],
+        ['EA SPORTS FIFA 23', 59.99, 20,   'Discounted North America edition.',             $fifa_img, 2, 3],
 
         // Red Dead Redemption 2
-        ['Red Dead Redemption 2', 49.99, null, 'Epic open-world western adventure.',            1, 1],
-        ['Red Dead Redemption 2', 49.99, 10,   'European edition with extra story missions.',   4, 2],
-        ['Red Dead Redemption 2', 44.99, null, 'North American standard edition.',              5, 3],
-        ['Red Dead Redemption 2', 44.99, 5,    'Asian release with subtitles support.',         3, 4],
-        ['Red Dead Redemption 2', 49.99, null, 'Special edition includes exclusive content.',   1, 1],
-        ['Red Dead Redemption 2', 54.99, 25,   'Ultimate edition with all story DLC.',          2, 2],
-        ['Red Dead Redemption 2', 49.99, null, 'Online multiplayer bundle.',                    4, 1],
-        ['Red Dead Redemption 2', 39.99, 30,   'Heavily discounted bundle deal.',               5, 3],
+        ['Red Dead Redemption 2', 49.99, null, 'Epic open-world western adventure.',            $rdr2_img, 1, 1],
+        ['Red Dead Redemption 2', 49.99, 10,   'European edition with extra story missions.',   $rdr2_img, 4, 2],
+        ['Red Dead Redemption 2', 44.99, null, 'North American standard edition.',              $rdr2_img, 5, 3],
+        ['Red Dead Redemption 2', 44.99, 5,    'Asian release with subtitles support.',         $rdr2_img, 3, 4],
+        ['Red Dead Redemption 2', 49.99, null, 'Special edition includes exclusive content.',   $rdr2_img, 1, 1],
+        ['Red Dead Redemption 2', 54.99, 25,   'Ultimate edition with all story DLC.',          $rdr2_img, 2, 2],
+        ['Red Dead Redemption 2', 49.99, null, 'Online multiplayer bundle.',                    $rdr2_img, 4, 1],
+        ['Red Dead Redemption 2', 39.99, 30,   'Heavily discounted bundle deal.',               $rdr2_img, 5, 3],
 
         // Split Fiction
-        ['Split Fiction', 39.99, null, 'Co-op adventure across different fiction worlds.', 1, 1],
-        ['Split Fiction', 39.99, null, 'European release of the co-op adventure.',         2, 2],
-        ['Split Fiction', 34.99, 10,   'North America edition with bonus chapter.',        3, 3],
-        ['Split Fiction', 34.99, null, 'Asian edition with localized content.',             4, 4],
-        ['Split Fiction', 39.99, 5,    'Deluxe edition includes digital artbook.',         5, 1],
-        ['Split Fiction', 44.99, null, 'Ultimate edition with OST included.',              6, 2],
-        ['Split Fiction', 39.99, null, 'Switch portable co-op edition.',                   6, 1],
-        ['Split Fiction', 29.99, 25,   'Budget-friendly co-op bundle.',                    1, 3],
+        ['Split Fiction', 39.99, null, 'Co-op adventure across different fiction worlds.', $sf_img, 1, 1],
+        ['Split Fiction', 39.99, null, 'European release of the co-op adventure.',         $sf_img, 2, 2],
+        ['Split Fiction', 34.99, 10,   'North America edition with bonus chapter.',        $sf_img, 3, 3],
+        ['Split Fiction', 34.99, null, 'Asian edition with localized content.',             $sf_img, 4, 4],
+        ['Split Fiction', 39.99, 5,    'Deluxe edition includes digital artbook.',         $sf_img, 5, 1],
+        ['Split Fiction', 44.99, null, 'Ultimate edition with OST included.',              $sf_img, 6, 2],
+        ['Split Fiction', 39.99, null, 'Switch portable co-op edition.',                   $sf_img, 6, 1],
+        ['Split Fiction', 29.99, 25,   'Budget-friendly co-op bundle.',                    $sf_img, 1, 3],
     ];
 
     $stmt = $db->prepare('
-        INSERT INTO games (game_name, price, discount, details, platform_id, region_id)
-        VALUES (:game_name, :price, :discount, :details, :platform_id, :region_id)
+        INSERT INTO games (game_name, price, discount, details, image_url, platform_id, region_id)
+        VALUES (:game_name, :price, :discount, :details, :image_url, :platform_id, :region_id)
     ');
     foreach ($games as $g) {
         $stmt->bindValue(':game_name',   $g[0], SQLITE3_TEXT);
         $stmt->bindValue(':price',       $g[1], SQLITE3_FLOAT);
         $stmt->bindValue(':discount',    $g[2], $g[2] === null ? SQLITE3_NULL : SQLITE3_INTEGER);
         $stmt->bindValue(':details',     $g[3], SQLITE3_TEXT);
-        $stmt->bindValue(':platform_id', $g[4], SQLITE3_INTEGER);
-        $stmt->bindValue(':region_id',   $g[5], SQLITE3_INTEGER);
+        $stmt->bindValue(':image_url',   $g[4], SQLITE3_TEXT);
+        $stmt->bindValue(':platform_id', $g[5], SQLITE3_INTEGER);
+        $stmt->bindValue(':region_id',   $g[6], SQLITE3_INTEGER);
         $stmt->execute();
     }
 

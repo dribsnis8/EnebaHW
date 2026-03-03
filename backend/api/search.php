@@ -21,7 +21,7 @@ if ($query === '') {
 $db = getDB();
 
 $result = $db->query("
-    SELECT g.game_id, g.game_name, g.price, g.discount, g.details,
+    SELECT g.game_id, g.game_name, g.price, g.discount, g.details, g.image_url,
            p.platform_id, p.platform_name,
            r.region_id, r.region_name
     FROM games g
