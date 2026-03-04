@@ -5,14 +5,21 @@ A full-stack web application that displays games and supports fuzzy search via *
 | Layer    | Technology |
 |----------|-----------|
 | Frontend | React (CRA) |
-| Backend  | PHP 8 |
+| Backend  | PHP 8 + [Slim 4](https://www.slimframework.com/) |
 | Database | SQLite 3 |
 
 ---
 
 ## Quick Start
 
-### 1. Initialize the database
+### 1. Install PHP dependencies
+
+```bash
+cd backend
+composer install
+```
+
+### 2. Initialize the database
 
 ```bash
 cd backend
@@ -21,16 +28,16 @@ php init_db.php
 
 This creates `backend/database/games.db` and seeds it with platforms and games.
 
-### 2. Start the PHP development server
+### 3. Start the Slim development server
 
 ```bash
 cd backend
-php -S localhost:8080
+php -S localhost:8080 -t public
 ```
 
 The API is now available at `http://localhost:8080/api/`.
 
-### 3. Start the React dev server
+### 4. Start the React dev server
 
 In a separate terminal:
 
@@ -48,8 +55,8 @@ Open `http://localhost:3000` in your browser.
 
 | Method | URL | Description |
 |--------|-----|-------------|
-| GET | `/api/games.php?page=1&limit=20` | Paginated game list |
-| GET | `/api/search.php?q=<query>` | Levenshtein-distance search |
+| GET | `/api/games?page=1&limit=20` | Paginated game list |
+| GET | `/api/search?q=<query>` | Levenshtein-distance search |
 
 ---
 
