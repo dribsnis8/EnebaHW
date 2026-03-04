@@ -2,6 +2,9 @@
 
 namespace App;
 
+use PDO;
+use PDOException;
+
 class Database
 {
     private static ?PDO $connection = null;
