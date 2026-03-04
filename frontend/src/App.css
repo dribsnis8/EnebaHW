@@ -45,8 +45,33 @@ body {
 .results-count {
   font-size: 0.9rem;
   color: #aaa;
-  margin-bottom: 16px;
   padding: 0 4px;
+}
+
+.results-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.price-sort-select {
+  padding: 7px 12px;
+  font-size: 0.875rem;
+  background: #1e1e2e;
+  color: #f0f0f0;
+  border: 2px solid #555;
+  border-radius: 20px;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.price-sort-select:focus,
+.price-sort-select:hover {
+  border-color: #7b68ee;
 }
 
 .loading {

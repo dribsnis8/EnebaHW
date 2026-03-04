@@ -15,6 +15,7 @@ function App() {
   const [hasMore, setHasMore]         = useState(false);
   const [page, setPage]               = useState(1);
   const [totalCount, setTotalCount]   = useState(0);
+  const [priceSort, setPriceSort]     = useState('default');
   const debounceRef                   = useRef(null);
 
   const loadGames = useCallback(async (nextPage = 1, append = false) => {
@@ -58,6 +59,7 @@ function App() {
 
   const handleSearch = (value) => {
     setQuery(value);
+    setPriceSort('default');
     clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => searchGames(value), 350);
   };
@@ -67,6 +69,18 @@ function App() {
       loadGames(page + 1, true);
     }
   };
+
+  const effectivePrice = (g) => {
+    const base = parseFloat(g.price) || 0;
+    return g.discount ? base * (1 - g.discount / 100) : base;
+  };
+
+  const sortedGames = priceSort === 'default'
+    ? displayedGames
+    : [...displayedGames].sort((a, b) => {
+        const diff = effectivePrice(a) - effectivePrice(b);
+        return priceSort === 'asc' ? diff : -diff;
+      });
 
   return (
     <div className="App">
@@ -79,12 +93,26 @@ function App() {
           <div className="loading">Loading games\u2026</div>
         ) : (
           <>
-            <p className="results-count">
-              {query.trim()
-                ? `${displayedGames.length} result(s) for "${query}"`
-                : `Showing ${displayedGames.length} of ${totalCount} games`}
-            </p>
-            <GameGrid games={displayedGames} />
+            <div className="results-bar">
+              <p className="results-count">
+                {query.trim()
+                  ? `${displayedGames.length} result(s) for "${query}"`
+                  : `Showing ${displayedGames.length} of ${totalCount} games`}
+              </p>
+              {displayedGames.length > 0 && (
+                <select
+                  className="price-sort-select"
+                  value={priceSort}
+                  onChange={e => setPriceSort(e.target.value)}
+                  aria-label="Sort by price"
+                >
+                  <option value="default">Sort: Default</option>
+                  <option value="asc">Price: Low to High</option>
+                  <option value="desc">Price: High to Low</option>
+                </select>
+              )}
+            </div>
+            <GameGrid games={sortedGames} />
             {hasMore && !query.trim() && (
               <button
                 className="load-more-btn"
