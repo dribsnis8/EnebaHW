@@ -30,11 +30,67 @@ $app->options('/{routes:.+}', function (Request $request, Response $response): R
 });
 
 /**
- * Perform a Levenshtein-distance fuzzy search over a set of games.
+ * Compute the trigram similarity (Sørensen–Dice coefficient) between two strings.
+ *
+ * Breaking both strings into overlapping 3-character substrings and measuring
+ * how much they overlap is order-insensitive, so "sword dark" and "dark sword"
+ * produce a high similarity even though the word order differs.
+ *
+ * Strings shorter than 3 characters cannot form trigrams; for those, 0.0 is
+ * returned.  Short queries are still handled by the Levenshtein path inside
+ * fuzzySearch.
+ *
+ * @param string $a First string (should already be lower-cased).
+ * @param string $b Second string (should already be lower-cased).
+ * @return float Similarity in the range [0.0, 1.0].
+ */
+function trigramSimilarity(string $a, string $b): float
+{
+    if ($a === $b) {
+        return 1.0;
+    }
+    if (strlen($a) < 3 || strlen($b) < 3) {
+        return 0.0;
+    }
+
+    $trigrams = static function (string $s): array {
+        $result = [];
+        $len = strlen($s);
+        for ($i = 0; $i <= $len - 3; $i++) {
+            $result[] = substr($s, $i, 3);
+        }
+        return $result;
+    };
+
+    $ta = array_count_values($trigrams($a));
+    $tb = array_count_values($trigrams($b));
+
+    $intersection = 0;
+    foreach ($ta as $t => $count) {
+        if (isset($tb[$t])) {
+            $intersection += min($count, $tb[$t]);
+        }
+    }
+
+    $total = array_sum($ta) + array_sum($tb);
+    if ($total === 0) {
+        return 0.0;
+    }
+
+    return (2 * $intersection) / $total;
+}
+
+/**
+ * Perform a fuzzy search over a set of games using both Levenshtein distance
+ * and trigram similarity.
+ *
+ * Levenshtein distance catches single-word typos; trigram similarity handles
+ * out-of-order words (e.g. "sword dark" matching "Dark Sword").  A row is
+ * included when it passes either criterion.
  *
  * @param PDOStatement $stmt  Executed statement whose rows will be scanned.
  * @param string       $query Raw search term provided by the user.
- * @return array Matching game rows, sorted by distance ascending.
+ * @return array Matching game rows, sorted by relevance descending.
  */
 function fuzzySearch(PDOStatement $stmt, string $query): array
 {
@@ -45,32 +101,54 @@ function fuzzySearch(PDOStatement $stmt, string $query): array
     while ($row = $stmt->fetch()) {
         $nameLower = strtolower($row['game_name']);
 
-        // Exact / substring match – always include
+        // Exact / substring match – always include, best rank
         if (str_contains($nameLower, $queryLower)) {
-            $row['distance'] = 0;
+            $row['_score'] = 0;
             $matches[] = $row;
             continue;
         }
 
-        // Compare against the full game name and individual words
+        // Levenshtein: compare against full name and individual words
         $distances = [levenshtein($queryLower, $nameLower)];
         foreach (array_filter(explode(' ', $nameLower)) as $word) {
             $distances[] = levenshtein($queryLower, $word);
         }
         $minDist = min($distances);
 
-        if ($minDist <= $maxDistance) {
-            $row['distance'] = $minDist;
-            $matches[] = $row;
+        // Trigram similarity: handles out-of-order words.
+        // A threshold of 0.3 is intentionally permissive: trigram matching is
+        // already constrained by the 3-char minimum and the Dice coefficient
+        // penalises very short overlaps, so false-positive rates remain low.
+        $similarity   = trigramSimilarity($queryLower, $nameLower);
+        $levenMatch   = $minDist <= $maxDistance;
+        $trigramMatch = $similarity >= 0.3;
+
+        if (!$levenMatch && !$trigramMatch) {
+            continue;
         }
+
+        // Unified score: lower is better.
+        // Levenshtein matches use their edit distance directly (range 1–maxDistance).
+        // Trigram-only matches are ranked after all Levenshtein matches; within
+        // that group they are ordered by similarity.  The multiplier 100 maps the
+        // [0.0, 1.0] similarity range onto an integer band (0–100) large enough to
+        // guarantee no overlap with the Levenshtein scores (which top out at ~20).
+        if ($levenMatch) {
+            $score = $minDist;
+        } else {
+            $score = $maxDistance + 1 + (int)round((1.0 - $similarity) * 100);
+        }
+
+        $row['_score'] = $score;
+        $matches[] = $row;
     }
 
-    // Sort by distance ascending so best matches come first
-    usort($matches, fn($a, $b) => $a['distance'] <=> $b['distance']);
+    // Sort by score ascending so the best matches appear first
+    usort($matches, fn($a, $b) => $a['_score'] <=> $b['_score']);
 
-    // Remove helper field and cast types before returning
+    // Remove the helper field and cast types before returning
     foreach ($matches as &$m) {
-        unset($m['distance']);
+        unset($m['_score']);
         $m['price']    = (float)$m['price'];
         $m['discount'] = $m['discount'] !== null ? (int)$m['discount'] : null;
     }
