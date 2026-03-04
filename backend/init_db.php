@@ -1,7 +1,9 @@
 <?php
-require_once __DIR__ . '/database.php';
+require_once __DIR__ . '/vendor/autoload.php';
 
-$db = getDB();
+use App\Database;
+
+$db = Database::getConnection();
 
 $db->exec('
     CREATE TABLE IF NOT EXISTS platforms (

@@ -1,9 +1,14 @@
 <?php
 
-function getDB(): PDO {
-    static $db = null;
-    if ($db === null) {
-        try {
+namespace App;
+
+class Database
+{
+    private static ?PDO $connection = null;
+
+    public static function getConnection(): PDO
+    {
+        if (self::$connection === null) {
             $url = getenv('DATABASE_URL');
             if ($url !== false && $url !== '') {
                 // Render supplies DATABASE_URL as postgresql://user:pass@host:port/dbname
@@ -14,22 +19,18 @@ function getDB(): PDO {
                     $parsed['port'] ?? 5432,
                     ltrim($parsed['path'], '/')
                 );
-                $db = new PDO($dsn, $parsed['user'], $parsed['pass']);
+                self::$connection = new PDO($dsn, $parsed['user'], $parsed['pass']);
             } else {
                 $host = getenv('DB_HOST') ?: 'localhost';
                 $port = getenv('DB_PORT') ?: '5432';
                 $name = getenv('DB_NAME') ?: 'games';
                 $user = getenv('DB_USER') ?: 'postgres';
                 $pass = getenv('DB_PASS') ?: '';
-                $db = new PDO("pgsql:host=$host;port=$port;dbname=$name", $user, $pass);
+                self::$connection = new PDO("pgsql:host=$host;port=$port;dbname=$name", $user, $pass);
             }
-            $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            $db->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-        } catch (PDOException $e) {
-            http_response_code(503);
-            echo json_encode(['error' => 'Database connection failed']);
-            exit(1);
+            self::$connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            self::$connection->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
         }
+        return self::$connection;
     }
-    return $db;
 }

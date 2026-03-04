@@ -5,32 +5,38 @@ A full-stack web application that displays games and supports fuzzy search via *
 | Layer    | Technology |
 |----------|-----------|
 | Frontend | React (CRA) |
-| Backend  | PHP 8 |
-| Database | SQLite 3 |
+| Backend  | PHP 8 + Slim Framework 4 |
+| Database | PostgreSQL |
 
 ---
 
 ## Quick Start
 
-### 1. Initialize the database
+### 1. Install backend dependencies
 
 ```bash
 cd backend
+composer install
+```
+
+### 2. Initialize the database
+
+```bash
 php init_db.php
 ```
 
-This creates `backend/database/games.db` and seeds it with platforms and games.
+This creates the `platforms`, `regions`, and `games` tables in PostgreSQL and seeds them with data.
 
-### 2. Start the PHP development server
+### 3. Start the PHP development server
 
 ```bash
-cd backend
+cd backend/public
 php -S localhost:8080
 ```
 
 The API is now available at `http://localhost:8080/api/`.
 
-### 3. Start the React dev server
+### 4. Start the React dev server
 
 In a separate terminal:
 
@@ -48,8 +54,10 @@ Open `http://localhost:3000` in your browser.
 
 | Method | URL | Description |
 |--------|-----|-------------|
-| GET | `/api/games.php?page=1&limit=20` | Paginated game list |
-| GET | `/api/search.php?q=<query>` | Levenshtein-distance search |
+| GET | `/api/games?page=1&limit=20` | Paginated game list |
+| GET | `/api/list?page=1&limit=20` | Paginated game list |
+| GET | `/api/list?search=<query>` | Levenshtein-distance search |
+| GET | `/api/search?q=<query>` | Levenshtein-distance search |
 
 ---
 
@@ -57,19 +65,26 @@ Open `http://localhost:3000` in your browser.
 
 ```sql
 CREATE TABLE platforms (
-    platform_id   INTEGER PRIMARY KEY AUTOINCREMENT,
+    platform_id   SERIAL PRIMARY KEY,
     platform_name VARCHAR(255) NOT NULL
 );
 
+CREATE TABLE regions (
+    region_id   SERIAL PRIMARY KEY,
+    region_name VARCHAR(255) NOT NULL
+);
+
 CREATE TABLE games (
-    game_id     INTEGER PRIMARY KEY AUTOINCREMENT,
+    game_id     SERIAL PRIMARY KEY,
     game_name   VARCHAR(255) NOT NULL,
-    region      VARCHAR(255) NOT NULL,
     price       FLOAT        NOT NULL,
-    discount    INTEGER,               -- nullable
+    discount    INTEGER,
     details     VARCHAR      NOT NULL,
+    image_url   VARCHAR(512),
     platform_id INTEGER      NOT NULL,
-    FOREIGN KEY (platform_id) REFERENCES platforms(platform_id)
+    region_id   INTEGER      NOT NULL,
+    FOREIGN KEY (platform_id) REFERENCES platforms(platform_id),
+    FOREIGN KEY (region_id)   REFERENCES regions(region_id)
 );
 ```
 

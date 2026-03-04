@@ -1,0 +1,18 @@
+{
+    "name": "eneba/game-store-api",
+    "description": "Game Store REST API built with Slim Framework 4",
+    "type": "project",
+    "require": {
+        "php": "^8.2",
+        "slim/slim": "^4.14",
+        "slim/psr7": "^1.7"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    },
+    "config": {
+        "optimize-autoloader": true
+    }
+}

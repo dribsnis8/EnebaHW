@@ -17,9 +17,12 @@ FROM php:8.2-apache
 
 # Install the PostgreSQL client library and PDO extension
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends libpq-dev \
+    && apt-get install -y --no-install-recommends libpq-dev unzip \
     && docker-php-ext-install pdo pdo_pgsql \
     && rm -rf /var/lib/apt/lists/*
+
+# Install Composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 # Enable Apache modules needed for routing
 RUN a2enmod rewrite alias
@@ -27,8 +30,9 @@ RUN a2enmod rewrite alias
 # Replace the default Apache virtual-host config
 COPY docker/apache.conf /etc/apache2/sites-available/000-default.conf
 
-# PHP backend
+# PHP backend: copy source and install Composer dependencies
 COPY backend/ /var/www/backend/
+RUN composer install --no-dev --optimize-autoloader --working-dir=/var/www/backend
 
 # Pre-built React app (served as static files)
 COPY --from=frontend-builder /app/build /var/www/html
